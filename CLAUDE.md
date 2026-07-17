@@ -107,6 +107,8 @@ networking.firewall.allowedTCPPorts = [ 22 80 443 ];
 - `system.stateVersion`은 절대 변경 금지 (최초 설치 시의 버전 고정)
 - 설정 적용 후 git commit 필수 (rollback 기준점 유지)
 - 비밀값(API 키, 비밀번호)은 절대 nix 파일에 평문으로 작성 금지 → sops-nix 또는 agenix 사용
+- **`nix build`·`nixos-rebuild` 등 빌드성 명령을 실행할 때는, "지금 nix를 빌드한다"는 사실을
+  반드시 강하게(명확히) 사용자에게 언급하고 실행한다.** (시간·리소스가 드는 작업임을 분명히 알린다)
 
 ## 현재 열려 있는 포트
 - 22: SSH (ed25519 키 인증 전용, root 로그인 불가)
