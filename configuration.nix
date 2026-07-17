@@ -22,10 +22,14 @@
   users.users.alicek106 = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
+    shell = pkgs.zsh; # 기본 로그인 셸 (home-manager 에서 programs.zsh 구성)
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIH31VMIW5aeAgjJXlGPD69Zs00NPrQ8pOwkLTJDJXC2x nixos-alicek106"
     ];
   };
+
+  # zsh 를 로그인 셸로 쓰려면 시스템 레벨 활성화 필요
+  programs.zsh.enable = true;
 
   services.openssh = {
     enable = true;

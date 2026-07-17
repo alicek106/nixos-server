@@ -80,6 +80,15 @@ networking.firewall.allowedTCPPorts = [ 22 80 443 ];
 - nixpkgs 패키지 검색: https://search.nixos.org/packages
 - NixOS 위키: https://wiki.nixos.org
 
+## 설계 원칙 (필수 준수)
+- **재현성 보장**: 이 저장소의 파일만으로 새 머신에 NixOS를 설치했을 때도 **반드시 동일한 환경**이
+  보장되어야 한다. 모든 설정은 선언적으로(nix로) 관리한다.
+- **재현 불가 항목은 README에**: 만약 재현이 불가능하거나 nix스럽지 않은 설정(수동 인증, 클라이언트
+  측 요구사항 등)이 반드시 필요하다면, 그 내용을 `README.md`에 명시한다. nix 파일 안에 임시방편으로
+  숨기지 않는다.
+- **best practice + 단순성**: 디렉터리 구조와 nix 설정은 NixOS/nix의 best practice를 최대한 따르되,
+  불필요한 복잡성을 피한다. nix를 처음 접하는 사람이 읽어도 무난히 이해할 수 있는 수준으로 작성한다.
+
 ## 중요 주의사항
 - `hardware-configuration.nix`는 수동 수정 금지 (nixos-generate-config 자동 생성)
 - `system.stateVersion`은 절대 변경 금지 (최초 설치 시의 버전 고정)
