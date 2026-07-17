@@ -14,6 +14,18 @@ in
     enable = true;
     package = pkgs.claude-code;
 
+    # MCP 서버 (선언형). 바이너리를 store 경로로 직접 참조 → PATH·런타임 다운로드 의존 없음.
+    mcpServers = {
+      nixos = {
+        type = "stdio";
+        command = "${pkgs.mcp-nixos}/bin/mcp-nixos";
+      };
+      fetch = {
+        type = "stdio";
+        command = "${pkgs.mcp-server-fetch}/bin/mcp-server-fetch";
+      };
+    };
+
     settings = {
       permissions = {
         defaultMode = "acceptEdits";

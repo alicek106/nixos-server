@@ -42,11 +42,13 @@
   };
 
   environment.systemPackages = with pkgs; [
-    vim mcp-nixos uv
+    vim
     jq          # 유틸리티
     nixd        # Nix LSP (nix 파일 편집 품질)
   ];
   # statusline 의존성(bc/gawk/git 등)은 home/claude-code.nix 의 래퍼가 번들한다.
+  # MCP 서버(mcp-nixos, mcp-server-fetch)는 home/claude-code.nix 가 store 경로로 참조하므로
+  # systemPackages 에 둘 필요 없다. (uv 는 fetch MCP 용이었으나 이제 불필요)
   # claude-code 는 home-manager programs.claude-code 모듈이 소유(설치)한다.
 
   system.stateVersion = "26.05";

@@ -7,7 +7,7 @@
 
   programs.bat.enable = true;
 
-  # 범용 CLI 도구 (uv/jq/nixd/mcp-nixos/vim 은 이미 configuration.nix systemPackages)
+  # 범용 CLI 도구 (jq/nixd/vim 은 이미 configuration.nix systemPackages)
   home.packages = with pkgs; [
     ripgrep
     fd
