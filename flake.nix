@@ -15,30 +15,22 @@
     };
   };
 
-  outputs = { self, nixpkgs, disko, home-manager }:
-    let
+  outputs = { self, nixpkgs, disko, home-manager }: {
+    nixosConfigurations.nixos-alicek106 = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-    in
-    {
-      nixosConfigurations.nixos-alicek106 = nixpkgs.lib.nixosSystem {
-        inherit system;
-        modules = [
-          disko.nixosModules.disko
-          ./disk-config.nix
-          ./configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            # 기존 실제 파일(~/.claude/settings.json 등)이 있으면 덮어쓰지 않고 백업
-            home-manager.backupFileExtension = "hm-bak";
-            home-manager.users.alicek106 = import ./home/alicek106.nix;
-          }
-        ];
-      };
-
-      # 해시 반복/수동 검증용
-      packages.${system}.ccstatusline = pkgs.callPackage ./pkgs/ccstatusline.nix { };
+      modules = [
+        disko.nixosModules.disko
+        ./disk-config.nix
+        ./configuration.nix
+        home-manager.nixosModules.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          # 기존 실제 파일(~/.claude/settings.json 등)이 있으면 덮어쓰지 않고 백업
+          home-manager.backupFileExtension = "hm-bak";
+          home-manager.users.alicek106 = import ./home/alicek106.nix;
+        }
+      ];
     };
+  };
 }

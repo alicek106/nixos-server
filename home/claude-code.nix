@@ -1,7 +1,15 @@
 { pkgs, ... }:
 
 let
-  ccstatusline = pkgs.callPackage ../pkgs/ccstatusline.nix { };
+  # statusline 스크립트를 그대로 store 에 넣고 의존성을 래퍼 PATH 로 번들한다.
+  # → 스크립트 내용은 그대로 사용, 의존성(jq/gawk/bc/git 등)은 self-contained.
+  statusline = pkgs.runCommandLocal "claude-statusline"
+    { nativeBuildInputs = [ pkgs.makeWrapper ]; }
+    ''
+      install -Dm755 ${./statusline.sh} $out/bin/claude-statusline
+      wrapProgram $out/bin/claude-statusline \
+        --prefix PATH : ${pkgs.lib.makeBinPath (with pkgs; [ bash coreutils gnugrep gawk bc jq git ])}
+    '';
 in
 {
   programs.claude-code = {
@@ -61,8 +69,9 @@ in
 
       statusLine = {
         type = "command";
-        command = "${ccstatusline}/bin/ccstatusline";
+        command = "${statusline}/bin/claude-statusline";
         padding = 0;
+        refreshInterval = 10; # 초 단위. 5h 리셋 타이머 등 주기 갱신
       };
     };
 

@@ -42,6 +42,7 @@
     jq          # 유틸리티
     nixd        # Nix LSP (nix 파일 편집 품질)
   ];
+  # statusline 의존성(bc/gawk/git 등)은 home/claude-code.nix 의 래퍼가 번들한다.
   # claude-code 는 home-manager programs.claude-code 모듈이 소유(설치)한다.
 
   system.stateVersion = "26.05";
