@@ -37,7 +37,20 @@
     ];
   };
 
-  environment.systemPackages = with pkgs; [ vim git ];
+  environment.systemPackages = with pkgs; [
+    vim mcp-nixos uv
+    jq          # 유틸리티
+    nixd        # Nix LSP (nix 파일 편집 품질)
+  ];
+  # claude-code 는 home-manager programs.claude-code 모듈이 소유(설치)한다.
 
   system.stateVersion = "26.05";
+  security.sudo.wheelNeedsPassword = false;
+
+  programs.git = {
+    enable = true;
+    config = {
+      safe.directory = [ "/home/alicek106/nixos-server" ];
+    };
+  };
 }
