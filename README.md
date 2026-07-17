@@ -29,7 +29,28 @@ nixos-server/
 sudo nixos-rebuild switch --flake /home/alicek106/nixos-server#nixos-alicek106
 ```
 
-새 머신 설치는 disko로 파티션 후 `nixos-install --flake .#nixos-alicek106`. 자세한 명령은 `CLAUDE.md` 참고.
+---
+
+## 처음부터 재설치 (부트스트랩)
+
+이 저장소만으로 빈 디스크에서 서버를 재구성하는 절차. `disk-config.nix`(disko)가 파티션을,
+flake가 시스템·유저 환경을 담당한다.
+
+1. **NixOS 설치 미디어로 부팅** (live USB). 네트워크 연결 확인.
+2. **저장소 확보**: `git clone <이 저장소> /tmp/nixos-server && cd /tmp/nixos-server`
+   (또는 flake 참조를 직접 사용).
+3. **디스크 파티션 + 설치** — disko + nixos-install을 한 번에:
+   ```bash
+   # 디스크 장치 확인 후(예: /dev/nvme0n1) 실행
+   sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko/latest -- \
+     --mode disko /tmp/nixos-server/disk-config.nix
+   sudo nixos-install --flake /tmp/nixos-server#nixos-alicek106
+   ```
+   > 디스크 장치명은 `disk-config.nix`의 `/dev/nvme0n1` 기준. 다르면 먼저 맞춘다.
+4. **재부팅** 후 SSH 접속(공개키는 선언적으로 이미 등록됨. `configuration.nix` 참고).
+5. **설치 후 수동 단계**는 아래 "재현 불가능한 수동 설정"을 따른다 (Claude 인증 등).
+
+이후 설정 변경은 `sudo nixos-rebuild switch --flake .#nixos-alicek106`. (명령 모음은 `CLAUDE.md`)
 
 ---
 

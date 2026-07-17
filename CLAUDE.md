@@ -99,8 +99,15 @@ networking.firewall.allowedTCPPorts = [ 22 80 443 ];
 - **재현 불가 항목은 README에**: 만약 재현이 불가능하거나 nix스럽지 않은 설정(수동 인증, 클라이언트
   측 요구사항 등)이 반드시 필요하다면, 그 내용을 `README.md`에 명시한다. nix 파일 안에 임시방편으로
   숨기지 않는다.
+- **재설치 절차도 README에**: 이 저장소를 기준으로 서버를 처음부터 다시 빌드·설치할 때 필요한 행동
+  지침(파티션 → 설치 → 설치 후 수동 단계)을 `README.md`에 유지하고, 관련 설정이 바뀌면 최신화한다.
 - **best practice + 단순성**: 디렉터리 구조와 nix 설정은 NixOS/nix의 best practice를 최대한 따르되,
   불필요한 복잡성을 피한다. nix를 처음 접하는 사람이 읽어도 무난히 이해할 수 있는 수준으로 작성한다.
+- **워크플로 자율 제안**: 반복되는 수작업이나 비효율적 워크플로가 보이면, 새 skill·hook·모듈·명령으로
+  만들 가치가 있는지 판단해 사용자에게 자율적으로 제안한다.
+
+작업 시에는 `nix-change-review` 스킬(재현성·컨벤션·문서화 체크리스트)이 자동 참조되고, `.nix` 편집 후
+자동 포맷(nixpkgs-fmt) 및 종료 시 재현성 냄새 탐지 hook 이 걸려 있다 (`home/claude-code.nix`에 선언).
 
 ## 중요 주의사항
 - `hardware-configuration.nix`는 수동 수정 금지 (nixos-generate-config 자동 생성)
