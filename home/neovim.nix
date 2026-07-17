@@ -5,11 +5,10 @@
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
-    withNodeJs = true;
-    withPython3 = true;
 
-    # LSP 바이너리 (self-contained)
-    extraPackages = [ pkgs.nixd ];
+    # neovim 이 직접 호출하는 바이너리를 래퍼에 번들 (self-contained)
+    #  - nixd: Nix LSP  ·  fzf/ripgrep: fzf-vim 의 :Files/:Rg 용
+    extraPackages = with pkgs; [ nixd fzf ripgrep ];
 
     # 플러그인: nixpkgs.vimPlugins (선언형, 런타임 다운로드 없음)
     plugins = with pkgs.vimPlugins; [
