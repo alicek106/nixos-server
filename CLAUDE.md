@@ -64,6 +64,19 @@ nix flake update
 environment.systemPackages = with pkgs; [ vim claude-code 새패키지 ];
 ```
 
+### 패키지 버전 선택 (채널 분리)
+기본은 `nixpkgs` 26.05. **더 새 버전이 필요하면** `pkgs.unstable.<name>`을 쓴다
+(flake.nix의 `channelsOverlay`가 노출). 모듈 어디서든 출처가 드러나게:
+```nix
+home.packages = with pkgs; [
+  ripgrep            # 26.05 (기본)
+  unstable.someTool  # nixos-unstable 에서
+];
+```
+**특정 옛 버전 고정**이 필요하면(예: Go 1.24.2), 그 버전이 있는 커밋을 이름 있는 입력으로 flake.nix에
+추가하고(정확한 커밋은 nixos MCP `nix_versions`로 조회) `channelsOverlay`에 `pkgs.<이름>`으로 노출한다.
+커밋 해시를 모듈 안에 인라인 `import` 하지 않는다. (고정 커밋도 flake.lock에 박히므로 재현성은 유지됨)
+
 ### 서비스 추가
 서비스가 커지면 `modules/services/` 아래 별도 파일로 분리하고 `configuration.nix`에 `imports`로 포함:
 ```nix
