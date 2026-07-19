@@ -63,4 +63,73 @@
       Persistent = true; # 껐다 켜도 놓친 백업 따라잡기
     };
   };
+
+  # ============================================================================
+  # gitea 상태(repos + sqlite DB + conf)를 매일 S3 로 백업하고, 비어 있으면 자동 복원.
+  # aliced(앱 self-restore)·headscale 와 동일한 "empty 일 때만 복원" 패턴.
+  # 소유권이 혼합(git/gitea=uid 1000, ssh=root)이라 root + --numeric-owner 로 보존한다.
+  # ============================================================================
+
+  # --- 자동 복원: podman-gitea 기동 전에, 상태가 비어 있고 S3 백업이 있을 때만 복원 ---
+  systemd.services.gitea-s3-restore = {
+    description = "Restore gitea state from S3 if local state is empty";
+    before = [ "podman-gitea.service" ];
+    wantedBy = [ "podman-gitea.service" ];
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    path = with pkgs; [ awscli2 coreutils gnutar gzip ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      # root 로 실행(User= 없음): 혼합 소유권(0/1000)을 --numeric-owner 로 그대로 복원해야 함.
+      EnvironmentFile = config.age.secrets.nixos-credential.path; # AWS_*
+      ExecStart = pkgs.writeShellScript "gitea-s3-restore" ''
+        set -eu
+        if [ -f /var/lib/gitea/gitea/gitea.db ]; then
+          echo "gitea state present — skip restore"; exit 0
+        fi
+        if ! aws s3 ls s3://alicek106-backup/gitea/gitea-backup.tar.gz >/dev/null 2>&1; then
+          echo "no S3 backup found — fresh start (nothing to restore)"; exit 0
+        fi
+        echo "empty state + S3 backup exists → restoring…"
+        mkdir -p /var/lib/gitea
+        aws s3 cp s3://alicek106-backup/gitea/gitea-backup.tar.gz - \
+          | tar -xzp --numeric-owner -C /var/lib/gitea
+        echo "gitea state restored from S3"
+      '';
+    };
+  };
+
+  # --- 백업: 매일 무중단 스냅샷 → S3 ---
+  systemd.services.gitea-s3-backup = {
+    description = "Backup gitea state to S3";
+    path = with pkgs; [ sqlite awscli2 coreutils gnutar gzip ];
+    serviceConfig = {
+      Type = "oneshot";
+      # root 로 실행: cp -a 로 0/1000 소유권 보존 + tar --numeric-owner.
+      EnvironmentFile = config.age.secrets.nixos-credential.path; # AWS_*
+      ExecStart = pkgs.writeShellScript "gitea-s3-backup" ''
+        set -eu
+        tmp=$(mktemp -d)
+        trap 'rm -rf "$tmp"' EXIT
+        # 트리 전체를 스테이징(5MB, 즉시). ⚠️ gitea/conf/app.ini 는 절대 제외 금지 —
+        # 그 안의 SECRET_KEY/INTERNAL_TOKEN 이 DB 암호화·인증과 짝이라, DB 와 함께 보관해야
+        # 복원 후 복호화/세션이 깨지지 않는다. (db-only 로 "최적화"하면 조용히 망가짐)
+        cp -a /var/lib/gitea "$tmp/tree"
+        # 라이브 DB 대신 일관 스냅샷으로 교체(WAL 안전). wal/shm 은 스냅샷에 불필요.
+        sqlite3 /var/lib/gitea/gitea/gitea.db ".backup '$tmp/tree/gitea/gitea.db'"
+        rm -f "$tmp/tree/gitea/gitea.db-wal" "$tmp/tree/gitea/gitea.db-shm"
+        tar -czpf "$tmp/gitea.tar.gz" --numeric-owner -C "$tmp/tree" .
+        aws s3 cp "$tmp/gitea.tar.gz" s3://alicek106-backup/gitea/gitea-backup.tar.gz
+      '';
+    };
+  };
+
+  systemd.timers.gitea-s3-backup = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+    };
+  };
 }
