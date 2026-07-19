@@ -70,3 +70,17 @@ flake가 시스템·유저 환경을 담당한다.
   로컬 터미널 폰트가 Nerd Font여야 한다. (예: JetBrainsMono Nerd Font)
 - **OSC52 지원**: neovim에서 `yank`한 내용을 로컬 시스템 클립보드로 복사하려면 로컬 터미널이
   OSC52를 지원해야 한다(대부분의 최신 터미널·tmux는 지원). 미지원 시 yank는 nvim 내부 레지스터로만 동작.
+
+### 3. ntfy 알림 엔드포인트 (완료 알림용)
+Claude 완료/입력대기 알림은 `home/claude-code.nix`의 Notification 훅이 보낸다. 훅은 엔드포인트를
+저장소가 아니라 **서버의 로컬 파일에서 읽는다** (토픽/URL을 public repo에 노출하지 않기 위함):
+- 서버에 `~/.config/claude/ntfy-url` 파일 생성, 첫 줄에 전송 대상 URL 한 줄:
+  ```
+  https://ntfy.sh/<추측-불가능한-토픽>
+  ```
+  (파일이 없으면 훅은 조용히 아무것도 안 함)
+- 받는 쪽: 폰 ntfy 앱(iOS/Android) 또는 맥 웹앱(브라우저로 ntfy.sh 열고 토픽 구독+알림 허용)에서
+  같은 토픽 구독.
+- 공개 ntfy.sh 토픽은 토픽명만 알면 누구나 읽으므로 **추측 불가능한 토픽**을 쓴다. 완전한 프라이버시가
+  필요하면 서버에 `services.ntfy-sh` 셀프호스팅 + WireGuard 내부망으로 두고 URL만 그쪽으로 바꾸면 된다
+  (비밀값은 agenix/sops-nix로 관리).

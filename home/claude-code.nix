@@ -17,6 +17,9 @@ let
     (with pkgs; [ bash coreutils jq nixpkgs-fmt ]);
   reproCheckHook = mkScriptBin "claude-hook-repro-check" ./hooks/repro-check.sh
     (with pkgs; [ bash coreutils gnugrep git ]);
+  # ntfy 알림 훅. 엔드포인트는 ~/.config/claude/ntfy-url (git 밖)에서 읽는다.
+  ntfyHook = mkScriptBin "claude-hook-ntfy" ./hooks/ntfy-notify.sh
+    (with pkgs; [ bash coreutils jq curl ]);
 in
 {
   programs.claude-code = {
@@ -111,6 +114,14 @@ in
           {
             hooks = [
               { type = "command"; command = "${reproCheckHook}/bin/claude-hook-repro-check"; }
+            ];
+          }
+        ];
+        # 완료/입력대기 시 ntfy 로 알림 (엔드포인트 있을 때만 동작)
+        Notification = [
+          {
+            hooks = [
+              { type = "command"; command = "${ntfyHook}/bin/claude-hook-ntfy"; }
             ];
           }
         ];
