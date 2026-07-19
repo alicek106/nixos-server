@@ -7,9 +7,7 @@
   #
   # 선행조건(수동): 통합 자격증명 시크릿(nixos-credential.age), A레코드, 공유기 443 포워딩. (README 참고)
 
-  # 통합 AWS 자격증명 (ACME DNS-01 + DDNS + S3 백업 + aliced 공용).
-  # env-file: AWS_ACCESS_KEY_ID/SECRET/REGION. 여기서 한 번만 선언하고 여러 모듈이 참조.
-  age.secrets.nixos-credential.file = ./secrets/nixos-credential.age;
+  # 통합 AWS 자격증명(nixos-credential)은 ../../secrets.nix 에서 중앙 선언.
 
   # --- TLS: Let's Encrypt DNS-01 via Route53 ---
   security.acme = {

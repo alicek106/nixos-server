@@ -3,8 +3,7 @@
   # aliced: 커스텀 앱 컨테이너 (AWS all-in-one 에서 이전).
   # 이미지 레지스트리 경로만 원본 그대로(불가피) — 그 외 모든 명명은 aliced.
 
-  # aliced 전용 시크릿(PASSWORD, SECRET_KEY). AWS 자격증명은 통합 nixos-credential 이 공급.
-  age.secrets.aliced-env.file = ./secrets/aliced-env.age;
+  # 시크릿(aliced-env, nixos-credential)은 ../../secrets.nix 에서 중앙 선언.
 
   virtualisation.oci-containers = {
     backend = "podman";

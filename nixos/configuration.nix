@@ -1,6 +1,16 @@
 { config, lib, pkgs, ... }:
 {
-  imports = [ ./hardware-configuration.nix ./aliced.nix ./gitea.nix ./headscale.nix ./tailscale.nix ./backup.nix ./ddns.nix ];
+  imports = [
+    ./hardware-configuration.nix
+    ./secrets.nix # agenix 시크릿 중앙 선언
+    ./modules/services/aliced.nix
+    ./modules/services/gitea.nix
+    ./modules/services/headscale.nix
+    ./modules/services/tailscale.nix
+    ./modules/services/backup.nix
+    ./modules/services/ddns.nix
+    ./modules/services/slack-alert.nix # systemd 실패 → Slack 알림 (재사용 템플릿)
+  ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -13,6 +23,14 @@
   networking.firewall.allowedTCPPorts = [ 22 ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # 오래된 세대 자동 GC + store 중복 제거 → /nix/store 무한 증가 방지 (수동 nix-collect-garbage 불필요)
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+  nix.settings.auto-optimise-store = true;
 
   hardware.cpu.intel.updateMicrocode = true;
   hardware.enableRedistributableFirmware = true;

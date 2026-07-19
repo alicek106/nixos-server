@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Notification hook: Claude 완료/입력대기 시 Slack Incoming Webhook 으로 알림 전송.
-# 웹훅 URL(시크릿)은 저장소에 올리지 않고 로컬 파일에서 읽는다.
-#   → public repo 에 시크릿 노출 없음. (재현적 관리로 올리려면 agenix/sops-nix, README TODO 참고)
+# 웹훅 URL(시크릿)은 agenix 로 관리한다: /run/agenix/slack-webhook (env-file: SLACK_WEBHOOK_URL=...).
+#   → secrets/slack-webhook.age 로 암호화되어 repo 에 있고, 복호화 키는 repo 밖.
+#   → 유저(alicek106)가 읽을 수 있게 secrets.nix 에서 owner 지정. (파일 없으면 조용히 종료)
 set -uo pipefail
 
-URL_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/claude/slack-webhook"
-[ -r "$URL_FILE" ] || exit 0
-url=$(head -n1 "$URL_FILE" | tr -d '[:space:]')
+SECRET="/run/agenix/slack-webhook"
+[ -r "$SECRET" ] || exit 0
+# shellcheck disable=SC1090
+url=$(. "$SECRET" 2>/dev/null; printf '%s' "${SLACK_WEBHOOK_URL:-}" | tr -d '[:space:]')
 [ -n "$url" ] || exit 0
 
 input=$(cat)
