@@ -70,3 +70,9 @@ flake가 시스템·유저 환경을 담당한다.
   로컬 터미널 폰트가 Nerd Font여야 한다. (예: JetBrainsMono Nerd Font)
 - **OSC52 지원**: neovim에서 `yank`한 내용을 로컬 시스템 클립보드로 복사하려면 로컬 터미널이
   OSC52를 지원해야 한다(대부분의 최신 터미널·tmux는 지원). 미지원 시 yank는 nvim 내부 레지스터로만 동작.
+- **완료 알림(iTerm2 기준)**: Claude Code 작업 완료 알림을 로컬에서 받으려면 —
+  ① macOS 시스템 설정 → 알림 → iTerm2 **알림 허용 ON**,
+  ② iTerm2 → Settings → Profiles → Terminal → "Notification Center Alerts" + "Filter Alerts" →
+     **"Send escape sequence-generated alerts"** 켜기.
+  (서버 sshd 는 `AcceptEnv LC_TERMINAL` 로 iTerm 식별 변수를 받도록 선언돼 있어, 맥이 기본 전달하는
+   `LC_TERMINAL` 로 Claude 가 iTerm 을 감지한다. OSC 알림은 iTerm 이 **백그라운드일 때만** 표시됨.)
