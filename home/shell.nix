@@ -31,6 +31,13 @@
       # Alt + ←/→ 로 단어 단위 이동
       bindkey "^[^[[C" forward-word
       bindkey "^[^[[D" backward-word
+
+      # SSH 가 지운 TERM_PROGRAM 을 iTerm 이 남긴 LC_TERMINAL 로 복원.
+      # → Claude Code 가 iTerm 을 감지해 완료 알림(OSC)을 보낼 수 있게 함.
+      if [[ -z "$TERM_PROGRAM" && "$LC_TERMINAL" == "iTerm2" ]]; then
+        export TERM_PROGRAM="iTerm.app"
+        export TERM_PROGRAM_VERSION="$LC_TERMINAL_VERSION"
+      fi
     '';
   };
 
