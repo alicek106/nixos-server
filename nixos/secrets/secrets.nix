@@ -17,4 +17,6 @@ in
   "wg-private.age".publicKeys = all;
 
   "route53-credentials.age".publicKeys = all;
+
+  "nixos-credential.age".publicKeys = all;
 }
