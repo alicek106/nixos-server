@@ -17,8 +17,8 @@ let
     (with pkgs; [ bash coreutils jq nixpkgs-fmt ]);
   reproCheckHook = mkScriptBin "claude-hook-repro-check" ./hooks/repro-check.sh
     (with pkgs; [ bash coreutils gnugrep git ]);
-  # ntfy 알림 훅. 엔드포인트는 ~/.config/claude/ntfy-url (git 밖)에서 읽는다.
-  ntfyHook = mkScriptBin "claude-hook-ntfy" ./hooks/ntfy-notify.sh
+  # Slack 알림 훅. 웹훅 URL 은 ~/.config/claude/slack-webhook (git 밖, 시크릿)에서 읽는다.
+  slackHook = mkScriptBin "claude-hook-slack" ./hooks/slack-notify.sh
     (with pkgs; [ bash coreutils jq curl ]);
 in
 {
@@ -117,11 +117,11 @@ in
             ];
           }
         ];
-        # 완료/입력대기 시 ntfy 로 알림 (엔드포인트 있을 때만 동작)
+        # 완료/입력대기 시 Slack 으로 알림 (웹훅 파일 있을 때만 동작)
         Notification = [
           {
             hooks = [
-              { type = "command"; command = "${ntfyHook}/bin/claude-hook-ntfy"; }
+              { type = "command"; command = "${slackHook}/bin/claude-hook-slack"; }
             ];
           }
         ];
