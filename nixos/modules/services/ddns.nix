@@ -12,6 +12,7 @@
       ExecStart = pkgs.writeShellScript "ddns-route53" ''
         set -euo pipefail
         ip=$(curl -fsS --max-time 10 https://checkip.amazonaws.com | tr -d '[:space:]')
+        if [ -z "$ip" ]; then echo "could not determine public IP"; exit 1; fi
         zone=$(aws route53 list-hosted-zones-by-name --dns-name alicek106.com \
                  --query 'HostedZones[0].Id' --output text | sed 's#/hostedzone/##')
         if [ -z "$zone" ] || [ "$zone" = "None" ]; then

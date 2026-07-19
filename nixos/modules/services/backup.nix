@@ -13,6 +13,12 @@
 # ⚠️ 이 fail-closed 는 자격증명이 없는 키에 '404'를 돌려준다는 전제(현재 IAM 은 ListBucket 보유).
 #    IAM 을 최소권한으로 좁혀 ListBucket 을 빼면 403 이 되어 신규배포가 막히니 주의.
 #    최종 안전망은 S3 버킷 버저닝(README 참고).
+#
+# 알려진 보류(현재 규모에선 무해, 데이터 커지면 재검토):
+#   - gitea 백업의 cp -a 트리 복사 + 압축본은 PrivateTmp(tmpfs=RAM)에 놓인다. repo 가 수백MB+ 로
+#     커지면 tar in-place(+--exclude db, 스냅샷 주입)로 바꿔 RAM 사용을 줄일 것. (지금 ~5MB)
+#   - 복원은 우리가 만든 tarball 을 root+--numeric-owner 로 전개한다. GNU tar 기본이 절대경로/`..`
+#     이탈을 막아 stateDir 밖으로는 못 나가지만, S3 오염 시의 잔여 위험은 남는다 → S3 접근제어+버저닝으로 완화.
 { config, pkgs, lib, ... }:
 let
   bucket = "alicek106-backup";

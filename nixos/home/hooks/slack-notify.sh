@@ -7,8 +7,8 @@ set -uo pipefail
 
 SECRET="/run/agenix/slack-webhook"
 [ -r "$SECRET" ] || exit 0
-# shellcheck disable=SC1090
-url=$(. "$SECRET" 2>/dev/null; printf '%s' "${SLACK_WEBHOOK_URL:-}" | tr -d '[:space:]')
+# env-file 을 소싱하지 않고 값만 파싱한다(시크릿 변조 시 임의 코드 실행 방지).
+url=$(grep -m1 '^SLACK_WEBHOOK_URL=' "$SECRET" 2>/dev/null | cut -d= -f2- | tr -d '[:space:]')
 [ -n "$url" ] || exit 0
 
 input=$(cat)

@@ -11,11 +11,14 @@
     serviceConfig = {
       Type = "oneshot";
       # slack-webhook.age = env-file (SLACK_WEBHOOK_URL=...). root 서비스라 읽기 가능.
-      EnvironmentFile = config.age.secrets.slack-webhook.path;
+      # 선행 '-' : 시크릿이 아직 없어도(신규배포·미populate) 유닛이 실패하지 않게 optional 로.
+      EnvironmentFile = "-${config.age.secrets.slack-webhook.path}";
     };
     scriptArgs = "%i"; # 실패한 유닛 이름을 $1 로 전달
     script = ''
       unit="$1"
+      # 웹훅 미설정이면 조용히 종료(알림 유닛 자체가 실패로 남지 않게)
+      [ -n "''${SLACK_WEBHOOK_URL:-}" ] || { echo "no SLACK_WEBHOOK_URL — skip alert"; exit 0; }
       payload=$(jq -n --arg t "🚨 [${config.networking.hostName}] systemd 유닛 실패: $unit" '{text: $t}')
       curl -s --max-time 5 -H 'Content-Type: application/json' -d "$payload" "$SLACK_WEBHOOK_URL" >/dev/null || true
     '';
