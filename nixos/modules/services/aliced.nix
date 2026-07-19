@@ -35,8 +35,8 @@
       user = "root";
 
       # 서버 tailnet IP 에만 바인딩 → 맥북 등 tailnet 피어에서만 접근(LAN/WAN 노출 0).
-      # (100.64.0.2 는 headscale 가 이 노드에 고정 할당한 IP — DB 를 S3 복원하면 유지됨)
-      ports = [ "100.64.0.2:8080:80" ];
+      # (tailnetIP 는 headscale 가 이 노드에 고정 할당한 IP — homelab.tailnetIP 단일 출처)
+      ports = [ "${config.homelab.tailnetIP}:8080:80" ];
     };
   };
 
@@ -48,9 +48,9 @@
   ];
 
   # tailnet 전용 리버스 프록시: http://diary.alicek106.net → aliced (포트 없이 접근).
-  # 100.64.0.2:80 에만 바인딩 → tailnet 피어 전용(WAN 노출 0). 이름은 headscale extra_records 로 배포.
+  # tailnetIP:80 에만 바인딩 → tailnet 피어 전용(WAN 노출 0). 이름은 headscale extra_records 로 배포.
   services.nginx.virtualHosts."diary.alicek106.net" = {
-    listen = [{ addr = "100.64.0.2"; port = 80; }];
-    locations."/".proxyPass = "http://100.64.0.2:8080";
+    listen = [{ addr = config.homelab.tailnetIP; port = 80; }];
+    locations."/".proxyPass = "http://${config.homelab.tailnetIP}:8080";
   };
 }

@@ -60,8 +60,8 @@
         # tailnet 내부 이름 → 서버 tailnet IP. 모든 tailnet 기기에 MagicDNS 로 자동 배포되어
         # /etc/hosts 편집 없이 http://diary.alicek106.net / http://gitea.alicek106.net 로 접근 가능.
         extra_records = [
-          { name = "diary.alicek106.net"; type = "A"; value = "100.64.0.2"; }
-          { name = "gitea.alicek106.net"; type = "A"; value = "100.64.0.2"; }
+          { name = "diary.alicek106.net"; type = "A"; value = config.homelab.tailnetIP; }
+          { name = "gitea.alicek106.net"; type = "A"; value = config.homelab.tailnetIP; }
         ];
       };
       # 초기엔 Tailscale 공개 DERP 릴레이 사용(간단). 자체 DERP 는 추후 승격.
