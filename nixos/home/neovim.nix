@@ -71,8 +71,6 @@
       set termguicolors
       set bg=dark
       set nu
-      set foldcolumn=0
-      autocmd FileType,BufWinEnter * setlocal foldcolumn=0
       set smartindent
       set shiftwidth=4
       set tabstop=4

@@ -66,7 +66,9 @@ require("nvim-autopairs").setup({})
 require("ibl").setup()
 
 -- 코드 접기 (nvim-ufo)
-vim.o.foldcolumn = "1"
+-- foldcolumn=0: 접기 기능(zc/zo/zR/zM)은 유지하되 왼쪽 fold 표시 열은 끔.
+-- (markdown 등에서 중첩 fold 깊이가 숫자로 떠 라인번호처럼 헷갈리는 것 방지. ufo 도 "0 is not bad" 명시)
+vim.o.foldcolumn = "0"
 vim.o.foldlevel = 99
 vim.o.foldlevelstart = 99
 vim.o.foldenable = true
