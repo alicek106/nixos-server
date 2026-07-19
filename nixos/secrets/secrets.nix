@@ -13,10 +13,5 @@ in
   #   PASSWORD, SECRET_KEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
   "aliced-env.age".publicKeys = all;
 
-  # WireGuard 설정/개인키 (나중에 WG 도입 시)
-  "wg-private.age".publicKeys = all;
-
-  "route53-credentials.age".publicKeys = all;
-
   "nixos-credential.age".publicKeys = all;
 }
