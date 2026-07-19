@@ -15,4 +15,6 @@ in
 
   # WireGuard 설정/개인키 (나중에 WG 도입 시)
   "wg-private.age".publicKeys = all;
+
+  "route53-credentials.age".publicKeys = all;
 }
