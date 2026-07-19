@@ -130,3 +130,6 @@ networking.firewall.allowedTCPPorts = [ 22 80 443 ];
 
 ## 현재 열려 있는 포트
 - 22: SSH (ed25519 키 인증 전용, root 로그인 불가)
+- 80/443 (TCP): nginx — headscale 컨트롤 플레인(443 TLS) + HTTP→HTTPS 리다이렉트(80). (`modules/services/headscale.nix`)
+- 3478/41641 (UDP): Tailscale STUN(3478)·WireGuard 직접 연결(41641). 공유기에서 이 UDP 도 포워딩해야 P2P 직결(미포워딩 시 DERP 릴레이로 폴백).
+- gitea(3000)·aliced(8080) 은 tailnet IP(100.64.0.2)에만 바인딩 → 방화벽 미개방(외부 노출 0).

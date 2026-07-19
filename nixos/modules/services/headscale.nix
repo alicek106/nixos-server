@@ -2,7 +2,7 @@
 {
   # Headscale: 자체 호스팅 Tailscale 컨트롤 플레인.
   #   - 클라이언트는 https://headscale.alicek106.com (443) 로 접속해 네트워크맵 수신
-  #   - nginx 가 443 에서 TLS 종료 → headscale(127.0.0.1:8080) 로 프록시(WebSocket 필수)
+  #   - nginx 가 443 에서 TLS 종료 → headscale(127.0.0.1:8085) 로 프록시(WebSocket 필수)
   #   - TLS 인증서는 Let's Encrypt DNS-01(Route53) 로 자동 발급/갱신 (포트 80 불필요)
   #
   # 선행조건(수동): 통합 자격증명 시크릿(nixos-credential.age), A레코드, 공유기 443 포워딩. (README 참고)
@@ -25,6 +25,13 @@
   services.nginx = {
     enable = true;
     recommendedProxySettings = true;
+    # 기본(catch-all) 서버: 올바른 호스트명(SNI) 이 아닌 요청은 여기로 떨어져 거부된다.
+    # → 공인 IP 직접 타격이나 잘못된 SNI 로 headscale vhost 를 프로빙하는 것을 차단.
+    virtualHosts."_" = {
+      default = true;
+      rejectSSL = true; # 인증서 없는 기본 서버 → TLS 핸드셰이크 거부(ssl_reject_handshake)
+      locations."/".return = "444"; # 평문 HTTP 는 연결만 끊음
+    };
     virtualHosts."headscale.alicek106.com" = {
       useACMEHost = "headscale.alicek106.com";
       forceSSL = true;

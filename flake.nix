@@ -65,5 +65,9 @@
         inherit system;
         modules = [ ./installer/installer.nix ];
       };
+
+      # 부트스트랩용 disko CLI — flake.lock 에 핀된 버전을 그대로 사용(재현성).
+      #   sudo nix run .#disko -- --mode disko ./nixos/disk-config.nix
+      packages.${system}.disko = disko.packages.${system}.disko;
     };
 }
