@@ -14,9 +14,22 @@
     environment = {
       USER_UID = "1000";
       USER_GID = "1000";
+      # 리버스 프록시 정식 URL — gitea 가 생성하는 링크·리다이렉트가 새 호스트명을 쓰게(app.ini 오버라이드).
+      GITEA__server__ROOT_URL = "http://gitea.alicek106.net/";
+      GITEA__server__DOMAIN = "gitea.alicek106.net";
     };
 
     # 서버 tailnet IP 에만 바인딩 → tailnet 피어에서만 접근(LAN/WAN 노출 0).
     ports = [ "100.64.0.2:3000:3000" ];
+  };
+
+  # tailnet 전용 리버스 프록시: http://gitea.alicek106.net → gitea (포트 없이 접근).
+  # 100.64.0.2:80 에만 바인딩 → tailnet 피어 전용. 이름은 headscale extra_records 로 배포.
+  services.nginx.virtualHosts."gitea.alicek106.net" = {
+    listen = [{ addr = "100.64.0.2"; port = 80; }];
+    locations."/" = {
+      proxyPass = "http://100.64.0.2:3000";
+      proxyWebsockets = true; # gitea 일부 기능(SSE/live) 대비
+    };
   };
 }

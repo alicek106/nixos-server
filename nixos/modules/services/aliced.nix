@@ -46,4 +46,11 @@
     "d /var/lib/aliced/data 0700 root root -"
     "d /var/lib/aliced/data/attachments 0700 root root -"
   ];
+
+  # tailnet 전용 리버스 프록시: http://diary.alicek106.net → aliced (포트 없이 접근).
+  # 100.64.0.2:80 에만 바인딩 → tailnet 피어 전용(WAN 노출 0). 이름은 headscale extra_records 로 배포.
+  services.nginx.virtualHosts."diary.alicek106.net" = {
+    listen = [{ addr = "100.64.0.2"; port = 80; }];
+    locations."/".proxyPass = "http://100.64.0.2:8080";
+  };
 }

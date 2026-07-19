@@ -57,6 +57,12 @@
         base_domain = "alicek106.net"; # tailnet 내부 도메인(공개 도메인과 달라야 함)
         # magic_dns 가 로컬 DNS 를 덮으므로 일반 도메인 해석용 업스트림 필요
         nameservers.global = [ "1.1.1.1" "8.8.8.8" ];
+        # tailnet 내부 이름 → 서버 tailnet IP. 모든 tailnet 기기에 MagicDNS 로 자동 배포되어
+        # /etc/hosts 편집 없이 http://diary.alicek106.net / http://gitea.alicek106.net 로 접근 가능.
+        extra_records = [
+          { name = "diary.alicek106.net"; type = "A"; value = "100.64.0.2"; }
+          { name = "gitea.alicek106.net"; type = "A"; value = "100.64.0.2"; }
+        ];
       };
       # 초기엔 Tailscale 공개 DERP 릴레이 사용(간단). 자체 DERP 는 추후 승격.
       derp = {
