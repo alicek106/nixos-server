@@ -10,12 +10,16 @@
 
 ```
 nixos-server/
-├── flake.nix              # 진입점, nixpkgs 26.05 + disko
+├── flake.nix              # 진입점 (nixpkgs 26.05 + disko + home-manager)
+│                          #   outputs: nixosConfigurations.nixos-alicek106 (서버) / .installer (ISO)
 ├── flake.lock
-├── configuration.nix      # 최상위 시스템 설정
-├── hardware-configuration.nix  # 자동 생성 (수정 금지)
-├── disk-config.nix        # disko 디스크 파티션 설정
-└── modules/               # 서비스·기능별 분리 모듈 (필요시 추가)
+├── nixos/                 # 실제 서버 시스템 설정 (flake output: .#nixos-alicek106)
+│   ├── configuration.nix        # 최상위 시스템 설정
+│   ├── hardware-configuration.nix  # 자동 생성 (수정 금지)
+│   ├── disk-config.nix          # disko 디스크 파티션 설정
+│   └── home/                    # home-manager 유저 환경 (셸/도구/git/neovim/claude-code)
+└── installer/             # 헤드리스 원격 설치용 커스텀 ISO (flake output: .#installer)
+    └── installer.nix            # sshd + 맥북 키가 구워진 인스톨러
 ```
 
 ## 핵심 명령어

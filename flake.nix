@@ -24,7 +24,6 @@
 
       # 오버레이: 다른 nixpkgs 채널을 pkgs.<채널>.* 로 노출한다.
       # 덕분에 모듈에서 `pkgs.unstable.foo` 처럼 패키지 출처가 한눈에 보인다.
-      # (특정 옛 버전 고정이 필요하면 여기에 pinned 입력을 추가해 같은 방식으로 노출)
       channelsOverlay = final: prev: {
         unstable = import nixpkgs-unstable {
           inherit (prev) system;
@@ -33,12 +32,13 @@
       };
     in
     {
+      # 실제 서버 시스템
       nixosConfigurations.nixos-alicek106 = nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
           disko.nixosModules.disko
-          ./disk-config.nix
-          ./configuration.nix
+          ./nixos/disk-config.nix
+          ./nixos/configuration.nix
           { nixpkgs.overlays = [ channelsOverlay ]; }
           home-manager.nixosModules.home-manager
           {
@@ -46,9 +46,16 @@
             home-manager.useUserPackages = true;
             # 기존 실제 파일(~/.claude/settings.json 등)이 있으면 덮어쓰지 않고 백업
             home-manager.backupFileExtension = "hm-bak";
-            home-manager.users.alicek106 = import ./home/alicek106.nix;
+            home-manager.users.alicek106 = import ./nixos/home/alicek106.nix;
           }
         ];
+      };
+
+      # 헤드리스 원격 설치용 커스텀 인스톨러 ISO
+      #   nix build .#nixosConfigurations.installer.config.system.build.isoImage
+      nixosConfigurations.installer = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [ ./installer/installer.nix ];
       };
     };
 }

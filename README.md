@@ -7,21 +7,33 @@ alicek106 개인 서버의 NixOS 설정. 시스템·유저 환경(셸/도구/neo
 
 ```
 nixos-server/
-├── flake.nix               # 진입점 (nixpkgs 26.05 + disko + home-manager)
+├── flake.nix               # 진입점 (outputs: .#nixos-alicek106 서버 / .#installer ISO)
 ├── flake.lock              # 입력 버전 고정 (재현성 핵심 — 수동 편집 금지)
-├── configuration.nix       # 시스템 설정 (부트/네트워크/유저/SSH/셸)
-├── hardware-configuration.nix  # 자동 생성 (수정 금지)
-├── disk-config.nix         # disko 디스크 파티션
-└── home/                   # home-manager 유저 환경
-    ├── alicek106.nix       # 유저 엔트리 (아래 모듈들을 imports)
-    ├── claude-code.nix     # Claude Code (settings + statusline)
-    ├── shell.nix           # zsh + starship + fzf + direnv
-    ├── tools.nix           # 범용 CLI 도구 (ripgrep/fd/bat/eza/gh 등)
-    ├── git.nix             # git 정체성/설정
-    ├── neovim.nix          # neovim + 플러그인
-    ├── nvim/               # neovim lua 모듈 (ui.lua, lsp.lua)
-    └── statusline.sh       # Claude Code 상태줄 스크립트
+├── nixos/                  # 실제 서버 시스템
+│   ├── configuration.nix       # 시스템 설정 (부트/네트워크/유저/SSH/셸)
+│   ├── hardware-configuration.nix  # 자동 생성 (수정 금지)
+│   ├── disk-config.nix         # disko 디스크 파티션
+│   └── home/                   # home-manager 유저 환경
+│       ├── alicek106.nix       # 유저 엔트리 (아래 모듈들을 imports)
+│       ├── claude-code.nix     # Claude Code (settings + statusline + hooks)
+│       ├── shell.nix           # zsh + starship + fzf + direnv
+│       ├── tools.nix           # 범용 CLI 도구 (ripgrep/fd/bat/eza/gh 등)
+│       ├── git.nix             # git 정체성/설정
+│       ├── neovim.nix          # neovim + 플러그인
+│       ├── nvim/               # neovim lua 모듈 (ui.lua, lsp.lua)
+│       └── statusline.sh       # Claude Code 상태줄 스크립트
+└── installer/              # 헤드리스 원격 설치용 커스텀 ISO
+    └── installer.nix           # sshd + 맥북 키가 구워진 인스톨러
 ```
+
+## 커스텀 설치 ISO
+
+헤드리스(모니터 없이) 재설치용. sshd + 맥북 공개키가 구워진 ISO 를 빌드한다:
+```bash
+nix build .#nixosConfigurations.installer.config.system.build.isoImage
+# result/iso/*.iso 를 USB 로 구워 부팅 → 맥북에서 바로 SSH 접속 가능
+```
+이후 설치는 아래 부트스트랩(또는 nixos-anywhere) 절차를 따른다.
 
 ## 적용
 
