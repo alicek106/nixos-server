@@ -76,11 +76,6 @@ in
       skipDangerousModePermissionPrompt = true;
       skipWorkflowUsageWarning = true;
 
-      # 완료/입력대기 시 Claude 앱(폰·연결기기)으로 푸시 (Remote Control).
-      # 요구: Claude 모바일 앱 설치 + CLI 와 동일 계정 로그인.
-      agentPushNotifEnabled = true;
-      inputNeededNotifEnabled = true;
-
       env = {
         DISABLE_AUTOUPDATER = "1";
         ANTHROPIC_DEFAULT_OPUS_MODEL = "claude-opus-4-8[1m]";

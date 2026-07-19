@@ -39,9 +39,6 @@
       "mlkem768x25519-sha256"
       "sntrup761x25519-sha512@openssh.com"
     ];
-    # iTerm2 가 SSH 너머로 보내는 단말 식별 변수 수용 → Claude Code 가 iTerm 감지해
-    # 완료 알림(OSC)을 보낼 수 있게 함. (맥 ssh 는 기본으로 LC_* 를 전달)
-    settings.AcceptEnv = [ "LC_TERMINAL" "LC_TERMINAL_VERSION" ];
   };
 
   environment.systemPackages = with pkgs; [
