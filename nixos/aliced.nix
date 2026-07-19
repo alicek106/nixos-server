@@ -34,8 +34,9 @@
       # AWS 원본과 동일하게 root 로 실행 (앱이 /data 를 root 로 읽고 씀)
       user = "root";
 
-      # WG 도입 전 임시 접근: localhost 전용(SSH 터널). LAN/WG 노출은 추후 결정.
-      ports = [ "127.0.0.1:8080:80" ];
+      # 서버 tailnet IP 에만 바인딩 → 맥북 등 tailnet 피어에서만 접근(LAN/WAN 노출 0).
+      # (100.64.0.2 는 headscale 가 이 노드에 고정 할당한 IP — DB 를 S3 복원하면 유지됨)
+      ports = [ "100.64.0.2:8080:80" ];
     };
   };
 

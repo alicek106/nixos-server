@@ -16,7 +16,7 @@
       USER_GID = "1000";
     };
 
-    # 웹 UI. WG 도입 전 localhost 전용(SSH 터널). SSH(git) 노출은 추후.
-    ports = [ "127.0.0.1:3000:3000" ];
+    # 서버 tailnet IP 에만 바인딩 → tailnet 피어에서만 접근(LAN/WAN 노출 0).
+    ports = [ "100.64.0.2:3000:3000" ];
   };
 }

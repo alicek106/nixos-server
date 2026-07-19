@@ -7,4 +7,8 @@
   # 등록은 런타임(수동, 1회):
   #   sudo tailscale up --login-server https://headscale.alicek106.com --authkey <preauthkey>
   services.tailscale.enable = true;
+
+  # 컨테이너를 tailnet IP(100.64.x)에 바인딩할 수 있게 — tailscaled 가 그 IP 를 아직
+  # 안 붙였어도 바인딩 허용(기동 순서 의존 제거). tailnet 서비스 노출에 필요.
+  boot.kernel.sysctl."net.ipv4.ip_nonlocal_bind" = 1;
 }
