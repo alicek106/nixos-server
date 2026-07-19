@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 {
-  imports = [ ./hardware-configuration.nix ./aliced.nix ./gitea.nix ./headscale.nix ./tailscale.nix ];
+  imports = [ ./hardware-configuration.nix ./aliced.nix ./gitea.nix ./headscale.nix ./tailscale.nix ./backup.nix ./ddns.nix ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

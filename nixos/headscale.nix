@@ -5,10 +5,11 @@
   #   - nginx 가 443 에서 TLS 종료 → headscale(127.0.0.1:8080) 로 프록시(WebSocket 필수)
   #   - TLS 인증서는 Let's Encrypt DNS-01(Route53) 로 자동 발급/갱신 (포트 80 불필요)
   #
-  # 선행조건(수동): Route53 자격증명 시크릿(route53-credentials.age), A레코드, 공유기 443 포워딩.
+  # 선행조건(수동): 통합 자격증명 시크릿(nixos-credential.age), A레코드, 공유기 443 포워딩. (README 참고)
 
-  # Route53 API 자격증명 (ACME DNS-01 + DDNS 공용). env-file: AWS_ACCESS_KEY_ID/SECRET/REGION.
-  age.secrets.route53-credentials.file = ./secrets/route53-credentials.age;
+  # 통합 AWS 자격증명 (ACME DNS-01 + DDNS + S3 백업 + aliced 공용).
+  # env-file: AWS_ACCESS_KEY_ID/SECRET/REGION. 여기서 한 번만 선언하고 여러 모듈이 참조.
+  age.secrets.nixos-credential.file = ./secrets/nixos-credential.age;
 
   # --- TLS: Let's Encrypt DNS-01 via Route53 ---
   security.acme = {
@@ -17,7 +18,7 @@
     certs."headscale.alicek106.com" = {
       dnsProvider = "route53";
       # lego 가 이 파일의 AWS_* 를 읽어 _acme-challenge TXT 를 Route53 에 생성 → 검증 → 발급
-      environmentFile = config.age.secrets.route53-credentials.path;
+      environmentFile = config.age.secrets.nixos-credential.path;
       group = "nginx"; # nginx 가 인증서를 읽을 수 있게
     };
   };

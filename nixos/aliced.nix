@@ -3,8 +3,7 @@
   # aliced: 커스텀 앱 컨테이너 (AWS all-in-one 에서 이전).
   # 이미지 레지스트리 경로만 원본 그대로(불가피) — 그 외 모든 명명은 aliced.
 
-  # 시크릿 + 노출 원치 않는 값(S3 버킷명 등)은 암호화 env-file 에서 읽는다.
-  # 활성화 시 /run/agenix/aliced-env 로 복호화됨.
+  # aliced 전용 시크릿(PASSWORD, SECRET_KEY). AWS 자격증명은 통합 nixos-credential 이 공급.
   age.secrets.aliced-env.file = ./secrets/aliced-env.age;
 
   virtualisation.oci-containers = {
@@ -13,9 +12,11 @@
       # 재현성 위해 태그(:latest) 대신 다이제스트로 핀
       image = "public.ecr.aws/o5v4y7w2/diary@sha256:f69e29b2dab4d47ea80512def64f3c49481b45cd34e24496ff0aba1cd7332bed";
 
-      # 순수 시크릿(PASSWORD, SECRET_KEY, AWS_ACCESS_KEY_ID/SECRET, AWS 리전)은
-      # 이 암호화 파일에 담긴다 → 저장소엔 안 보임.
-      environmentFiles = [ config.age.secrets.aliced-env.path ];
+      # aliced-env: PASSWORD, SECRET_KEY. nixos-credential: AWS_ACCESS_KEY_ID/SECRET/REGION.
+      environmentFiles = [
+        config.age.secrets.aliced-env.path
+        config.age.secrets.nixos-credential.path
+      ];
 
       # 비-시크릿 env (S3 버킷명은 이미지 URL 처럼 불가피 예외로 인라인 허용)
       environment = {
@@ -25,8 +26,8 @@
         ATTACHMENT_FILESYSTEM_PATH = "/data/attachments";
         NOTES_PER_PAGE = "10";
         BACKUP_ENABLED = "true";
-        S3_BUCKET_NAME = "alicek106-diary-backup";
-        S3_BACKUP_PREFIX = "backup/";
+        S3_BUCKET_NAME = "alicek106-backup";
+        S3_BACKUP_PREFIX = "aliced/"; # 끝의 / 필수 (앱이 prefix+filename 이어붙임)
       };
 
       volumes = [ "/var/lib/aliced/data:/data" ];
