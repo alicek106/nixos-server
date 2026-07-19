@@ -11,7 +11,7 @@ in
 {
   # diary 컨테이너 시크릿 (env-file 형식: KEY=VALUE 줄들)
   #   PASSWORD, SECRET_KEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-  "diary-env.age".publicKeys = all;
+  "aliced-env.age".publicKeys = all;
 
   # WireGuard 설정/개인키 (나중에 WG 도입 시)
   "wg-private.age".publicKeys = all;
