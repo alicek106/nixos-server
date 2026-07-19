@@ -44,6 +44,7 @@
   environment.systemPackages = with pkgs; [
     vim
     jq # 유틸리티
+    awscli2 # S3 백업 확인·복원 등 운영 명령 (backup/ddns 클로저에 이미 포함되어 추가 비용 ~0)
   ];
   # nixd(Nix LSP)는 home/neovim.nix 가 neovim 래퍼에 번들(neovim 전용).
   # statusline 의존성(bc/gawk/git 등)은 home/claude-code.nix 의 래퍼가 번들한다.
