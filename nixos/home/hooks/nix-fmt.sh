@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# PostToolUse hook: 편집된 .nix 파일을 nixpkgs-fmt 로 자동 포맷.
-# Claude Code 가 tool 입력 JSON 을 stdin 으로 전달 → file_path 추출.
+# PostToolUse hook: auto-format edited .nix files with nixpkgs-fmt.
+# Claude Code passes the tool input JSON on stdin → extract file_path.
 set -euo pipefail
 
 input=$(cat)

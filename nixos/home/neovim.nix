@@ -6,13 +6,10 @@
     viAlias = true;
     vimAlias = true;
 
-    # neovim 이 직접 호출하는 바이너리를 래퍼에 번들 (self-contained)
-    #  - nixd: Nix LSP  ·  fzf/ripgrep: fzf-vim 의 :Files/:Rg 용
+    # neovim 이 직접 호출하는 바이너리를 wrapper에 직접 bundling
     extraPackages = with pkgs; [ nixd fzf ripgrep ];
 
-    # 플러그인: nixpkgs.vimPlugins (선언형, 런타임 다운로드 없음)
     plugins = with pkgs.vimPlugins; [
-      # 기존 워크플로
       nerdtree
       vim-mundo
       vim-lastplace
@@ -20,7 +17,6 @@
       fzf-vim
       nvim-scrollbar
 
-      # UI
       lualine-nvim
       nvim-web-devicons
       tokyonight-nvim
@@ -40,7 +36,6 @@
         vimdoc
       ]))
 
-      # LSP / 자동완성
       nvim-lspconfig
       nvim-cmp
       cmp-nvim-lsp
@@ -50,7 +45,6 @@
       cmp_luasnip
       friendly-snippets
 
-      # 탐색
       telescope-nvim
       plenary-nvim
     ];
@@ -112,7 +106,7 @@
 
   home.file.".vim/undodir/.keep".text = "";
 
-  # neovim lua 모듈 (extraLuaConfig 에서 require("ui")/require("lsp") 로 로드)
+  # extraLuaConfig 에서 require("ui")/require("lsp") 로 로딩하는 lua 모듈
   home.file.".config/nvim/lua/ui.lua".source = ./nvim/ui.lua;
   home.file.".config/nvim/lua/lsp.lua".source = ./nvim/lsp.lua;
 }

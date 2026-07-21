@@ -1,135 +1,144 @@
 # NixOS Server Configuration — alicek106
 
-## 서버 사양
-- CPU: Intel (KVM 지원)
-- 디스크: NVMe (`/dev/nvme0n1`)
-- 파티션: GPT + btrfs (zstd 압축, subvolumes: root/nix/home/var)
-- 부트: systemd-boot + EFI
+## Server specs
+- CPU: Intel (KVM supported)
+- Disk: NVMe (`/dev/nvme0n1`)
+- Partitions: GPT + btrfs (zstd compression, subvolumes: root/nix/home/var)
+- Boot: systemd-boot + EFI
 
-## Nix 구성 구조
+## Nix layout
 
 ```
 nixos-server/
-├── flake.nix              # 진입점 (nixpkgs 26.05 + disko + home-manager)
-│                          #   outputs: nixosConfigurations.nixos-alicek106 (서버) / .installer (ISO)
+├── flake.nix              # entry point (nixpkgs 26.05 + disko + home-manager)
+│                          #   outputs: nixosConfigurations.nixos-alicek106 (server) / .installer (ISO)
 ├── flake.lock
-├── nixos/                 # 실제 서버 시스템 설정 (flake output: .#nixos-alicek106)
-│   ├── configuration.nix        # 최상위 시스템 설정
-│   ├── hardware-configuration.nix  # 자동 생성 (수정 금지)
-│   ├── disk-config.nix          # disko 디스크 파티션 설정
-│   └── home/                    # home-manager 유저 환경 (셸/도구/git/neovim/claude-code)
-└── installer/             # 헤드리스 원격 설치용 커스텀 ISO (flake output: .#installer)
-    └── installer.nix            # sshd + 맥북 키가 구워진 인스톨러
+├── nixos/                 # the actual server system config (flake output: .#nixos-alicek106)
+│   ├── configuration.nix        # top-level system config
+│   ├── hardware-configuration.nix  # auto-generated (do not edit)
+│   ├── disk-config.nix          # disko disk partitioning
+│   └── home/                    # home-manager user env (shell/tools/git/neovim/claude-code)
+└── installer/             # custom ISO for headless remote install (flake output: .#installer)
+    └── installer.nix            # installer with sshd + macbook key baked in
 ```
 
-## 핵심 명령어
+## Key commands
 
-### 설정 적용
+### Apply configuration
 ```bash
-# 현재 디렉터리의 flake로 rebuild
+# rebuild from the flake in the current directory
 sudo nixos-rebuild switch --flake /home/alicek106/nixos-server#nixos-alicek106
 
-# 적용 전 테스트 (재부팅 없이 일시 적용)
+# test before applying (apply temporarily, no reboot needed)
 sudo nixos-rebuild test --flake /home/alicek106/nixos-server#nixos-alicek106
 
-# dry-run (변경 사항 미리 보기)
+# dry-run (preview the changes)
 sudo nixos-rebuild dry-activate --flake /home/alicek106/nixos-server#nixos-alicek106
 ```
 
-### 패키지 및 옵션 검색
+### Search packages and options
 ```bash
-# 패키지 검색
-nix search nixpkgs <패키지명>
+# search packages
+nix search nixpkgs <package-name>
 
-# 설치된 패키지 목록
+# list installed packages
 nix-env -q
 
-# 옵션 검색 (로컬)
+# search options (local)
 nixos-option <option.path>
 ```
 
-### 가비지 컬렉션
+### Garbage collection
 ```bash
-# 30일 이전 세대 삭제
+# delete generations older than 30 days
 sudo nix-collect-garbage --delete-older-than 30d
 ```
 
-### 플레이크 업데이트
+### Update the flake
 ```bash
-# nixpkgs 등 inputs 업데이트
+# update inputs (nixpkgs, etc.)
 nix flake update
 ```
 
-## NixOS 작업 규칙
+## NixOS working rules
 
-### 패키지 추가
-`configuration.nix`의 `environment.systemPackages`에 추가:
+### Adding a package
+Add to `environment.systemPackages` in `configuration.nix`:
 ```nix
-environment.systemPackages = with pkgs; [ vim claude-code 새패키지 ];
+environment.systemPackages = with pkgs; [ vim claude-code new-package ];
 ```
 
-### 패키지 버전 선택 (채널 분리)
-기본은 `nixpkgs` 26.05. **더 새 버전이 필요하면** `pkgs.unstable.<name>`을 쓴다
-(flake.nix의 `channelsOverlay`가 노출). 모듈 어디서든 출처가 드러나게:
+### Choosing a package version (channel separation)
+The default is `nixpkgs` 26.05. **If you need a newer version**, use `pkgs.unstable.<name>`
+(exposed by `channelsOverlay` in flake.nix). Make the source obvious wherever it is used:
 ```nix
 home.packages = with pkgs; [
-  ripgrep            # 26.05 (기본)
-  unstable.someTool  # nixos-unstable 에서
+  ripgrep            # 26.05 (default)
+  unstable.someTool  # from nixos-unstable
 ];
 ```
-**특정 옛 버전 고정**이 필요하면(예: Go 1.24.2), 그 버전이 있는 커밋을 이름 있는 입력으로 flake.nix에
-추가하고(정확한 커밋은 nixos MCP `nix_versions`로 조회) `channelsOverlay`에 `pkgs.<이름>`으로 노출한다.
-커밋 해시를 모듈 안에 인라인 `import` 하지 않는다. (고정 커밋도 flake.lock에 박히므로 재현성은 유지됨)
+**If you need to pin a specific old version** (e.g. Go 1.24.2), add the commit that ships that
+version to flake.nix as a named input (look up the exact commit with the nixos MCP `nix_versions`)
+and expose it via `channelsOverlay` as `pkgs.<name>`. Do not inline-`import` a commit hash inside a
+module. (A pinned commit is also recorded in flake.lock, so reproducibility is preserved.)
 
-### 서비스 추가
-서비스가 커지면 `modules/services/` 아래 별도 파일로 분리하고 `configuration.nix`에 `imports`로 포함:
+### Adding a service
+When a service grows, split it into its own file under `modules/services/` and include it via
+`imports` in `configuration.nix`:
 ```nix
 imports = [ ./hardware-configuration.nix ./modules/services/nginx.nix ];
 ```
 
-### 방화벽 포트 개방
+### Opening firewall ports
 ```nix
 networking.firewall.allowedTCPPorts = [ 22 80 443 ];
 ```
 
-## 주요 URL
-- NixOS 옵션 검색: https://search.nixos.org/options
-- nixpkgs 패키지 검색: https://search.nixos.org/packages
-- NixOS 위키: https://wiki.nixos.org
+## Useful URLs
+- NixOS option search: https://search.nixos.org/options
+- nixpkgs package search: https://search.nixos.org/packages
+- NixOS wiki: https://wiki.nixos.org
 
-## 설계 원칙 (필수 준수)
-- **재현성 보장**: 이 저장소의 파일만으로 새 머신에 NixOS를 설치했을 때도 **반드시 동일한 환경**이
-  보장되어야 한다. 모든 설정은 선언적으로(nix로) 관리한다.
-- **재현 불가 항목은 README에**: 만약 재현이 불가능하거나 nix스럽지 않은 설정(수동 인증, 클라이언트
-  측 요구사항 등)이 반드시 필요하다면, 그 내용을 `README.md`에 명시한다. nix 파일 안에 임시방편으로
-  숨기지 않는다.
-- **재설치 절차도 README에**: 이 저장소를 기준으로 서버를 처음부터 다시 빌드·설치할 때 필요한 행동
-  지침(파티션 → 설치 → 설치 후 수동 단계)을 `README.md`에 유지하고, 관련 설정이 바뀌면 최신화한다.
-- **best practice + 단순성**: 디렉터리 구조와 nix 설정은 NixOS/nix의 best practice를 최대한 따르되,
-  불필요한 복잡성을 피한다. nix를 처음 접하는 사람이 읽어도 무난히 이해할 수 있는 수준으로 작성한다.
-- **워크플로 자율 제안**: 반복되는 수작업이나 비효율적 워크플로가 보이면, 새 skill·hook·모듈·명령으로
-  만들 가치가 있는지 판단해 사용자에게 자율적으로 제안한다.
+## Design principles (mandatory)
+- **Guarantee reproducibility**: installing NixOS on a new machine using only the files in this
+  repo **must produce an identical environment**. Manage all configuration declaratively (in nix).
+- **Non-reproducible items go in the README**: if something genuinely cannot be reproduced or is
+  not nix-like (manual auth, client-side requirements, etc.), document it in `README.md`. Do not
+  hide it as a stopgap inside a nix file.
+- **Reinstall procedure also in the README**: keep the instructions for building/installing the
+  server from scratch based on this repo (partition → install → post-install manual steps) in
+  `README.md`, and update them whenever the related config changes.
+- **Best practice + simplicity**: follow NixOS/nix best practices for directory layout and nix
+  config as much as possible, but avoid unnecessary complexity. Write it so that someone new to nix
+  can read it and follow along without much trouble.
+- **Proactively propose workflow improvements**: when you spot repetitive manual work or an
+  inefficient workflow, judge whether it is worth turning into a new skill/hook/module/command and
+  proactively propose it to the user.
 
-작업 시에는 `nix-change-review` 스킬(재현성·컨벤션·문서화 체크리스트)이 자동 참조되고, `.nix` 편집 후
-자동 포맷(nixpkgs-fmt) 및 종료 시 재현성 냄새 탐지 hook 이 걸려 있다 (`nixos/home/claude-code.nix`에 선언).
+While working, the `nix-change-review` skill (reproducibility/convention/documentation checklist) is
+auto-referenced, and there are hooks for auto-formatting after `.nix` edits (nixpkgs-fmt) and for
+reproducibility-smell detection on stop (declared in `nixos/home/claude-code.nix`).
 
-## 작업·소통 원칙 (필수 준수)
-- **사용자도 틀릴 수 있다고 가정**: 사용자의 의견·주장·지시를 무비판적으로 수용하지 않는다. 항상
-  근거로 검증하고, 사실이 다르거나 더 나은 방안이 있으면 **동의를 위한 동의 대신 명확히 반론·대안을
-  제시**한다. (사용자가 틀렸을 가능성을 항상 열어둔다)
-- **작업 전후 요약**: 작업을 **시작하기 전과 완료한 후**에 항상 **무엇을(what) / 어떻게(how) / 왜(why)**
-  했는지를 간결히 요약해 출력한다.
+## Working & communication principles (mandatory)
+- **Assume the user can also be wrong**: do not uncritically accept the user's opinions, claims, or
+  instructions. Always verify against evidence, and if something is factually off or there is a
+  better approach, **clearly push back / offer an alternative instead of agreeing just to agree**.
+  (Always leave open the possibility that the user is wrong.)
+- **Summarize before and after work**: **before starting and after finishing** a task, always
+  briefly summarize **what / how / why** you did.
 
-## 중요 주의사항
-- `hardware-configuration.nix`는 수동 수정 금지 (nixos-generate-config 자동 생성)
-- `system.stateVersion`은 절대 변경 금지 (최초 설치 시의 버전 고정)
-- 설정 적용 후 git commit 필수 (rollback 기준점 유지)
-- 비밀값(API 키, 비밀번호)은 절대 nix 파일에 평문으로 작성 금지 → sops-nix 또는 agenix 사용
-- **`nix build`·`nixos-rebuild` 등 빌드성 명령을 실행할 때는, "지금 nix를 빌드한다"는 사실을
-  반드시 강하게(명확히) 사용자에게 언급하고 실행한다.** (시간·리소스가 드는 작업임을 분명히 알린다)
+## Important cautions
+- Never edit `hardware-configuration.nix` by hand (auto-generated by nixos-generate-config).
+- Never change `system.stateVersion` (pinned to the version at first install).
+- Always git commit after applying config (keep a rollback reference point).
+- Never write secrets (API keys, passwords) in plaintext in nix files → use sops-nix or agenix.
+- **When running build-type commands like `nix build` / `nixos-rebuild`, you MUST clearly and
+  strongly tell the user "I'm building nix now" before running it.** (Make it clear this is a
+  time/resource-consuming operation.)
 
-## 현재 열려 있는 포트
-- 22: SSH (ed25519 키 인증 전용, root 로그인 불가)
-- 80/443 (TCP): nginx — headscale 컨트롤 플레인(443 TLS) + HTTP→HTTPS 리다이렉트(80). (`modules/services/headscale.nix`)
-- 3478/41641 (UDP): Tailscale STUN(3478)·WireGuard 직접 연결(41641). 공유기에서 이 UDP 도 포워딩해야 P2P 직결(미포워딩 시 DERP 릴레이로 폴백).
-- gitea(3000)·aliced(8080) 은 tailnet IP(100.64.0.2)에만 바인딩 → 방화벽 미개방(외부 노출 0).
+## Currently open ports
+- 22: SSH (ed25519 key auth only, root login disabled)
+- 80/443 (TCP): nginx — headscale control plane (443 TLS) + HTTP→HTTPS redirect (80). (`modules/services/headscale.nix`)
+- 3478/41641 (UDP): Tailscale STUN (3478) · WireGuard direct connection (41641). The router must also
+  forward this UDP for direct P2P (falls back to DERP relay if not forwarded).
+- gitea (3000) · aliced (8080) bind only to the tailnet IP (100.64.0.2) → not opened in the firewall (zero external exposure).

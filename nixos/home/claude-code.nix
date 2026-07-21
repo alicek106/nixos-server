@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  # 스크립트를 store 에 넣고 의존성을 래퍼 PATH 로 번들 (self-contained)
+  # 스크립트를 store 에 넣고, 의존성을 wrapper PATH로 bundling
   mkScriptBin = name: script: deps:
     pkgs.runCommandLocal name { nativeBuildInputs = [ pkgs.makeWrapper ]; } ''
       install -Dm755 ${script} $out/bin/${name}
@@ -12,12 +12,11 @@ let
   statusline = mkScriptBin "claude-statusline" ./statusline.sh
     (with pkgs; [ bash coreutils gnugrep gawk bc jq git ]);
 
-  # hook 스크립트 (settings.hooks 에서 store 경로로 참조)
+  # store 경로로 생성한다.
   nixFmtHook = mkScriptBin "claude-hook-nix-fmt" ./hooks/nix-fmt.sh
     (with pkgs; [ bash coreutils jq nixpkgs-fmt ]);
   reproCheckHook = mkScriptBin "claude-hook-repro-check" ./hooks/repro-check.sh
     (with pkgs; [ bash coreutils gnugrep git ]);
-  # Slack 알림 훅. 웹훅 URL 은 agenix 시크릿(/run/agenix/slack-webhook)에서 읽는다.
   slackHook = mkScriptBin "claude-hook-slack" ./hooks/slack-notify.sh
     (with pkgs; [ bash coreutils jq curl ]);
 in
@@ -26,7 +25,6 @@ in
     enable = true;
     package = pkgs.claude-code;
 
-    # MCP 서버 (선언형). 바이너리를 store 경로로 직접 참조 → PATH·런타임 다운로드 의존 없음.
     mcpServers = {
       nixos = {
         type = "stdio";
@@ -38,7 +36,6 @@ in
       };
     };
 
-    # skill (선언형). nix 변경 시 재현성·컨벤션·README 문서화를 점검하는 playbook.
     skills.nix-change-review = ./skills/nix-change-review.md;
 
     settings = {
@@ -98,9 +95,7 @@ in
         refreshInterval = 10;
       };
 
-      # hook (선언형, 기계적 강제)
       hooks = {
-        # .nix 편집 후 자동 포맷
         PostToolUse = [
           {
             matcher = "Edit|Write|MultiEdit";
@@ -109,7 +104,6 @@ in
             ];
           }
         ];
-        # 종료 시 재현 불가 "냄새" 탐지 → 경고(비차단)
         Stop = [
           {
             hooks = [
@@ -117,7 +111,6 @@ in
             ];
           }
         ];
-        # 완료/입력대기 시 Slack 으로 알림 (웹훅 파일 있을 때만 동작)
         Notification = [
           {
             hooks = [
