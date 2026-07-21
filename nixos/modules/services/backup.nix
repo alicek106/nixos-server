@@ -128,4 +128,20 @@ lib.mkMerge [
       tar -czpf "$tmp/backup.tar.gz" --numeric-owner -C "$tmp/tree" .
     '';
   })
+
+  # tailscaled.state = 이 서버의 tailnet 노드 정체성(개인키).
+  # 이걸 복원하면 재설치 후에도 tailscaled 가 "같은 노드"로 자동 재접속 → 같은 tailnet IP 유지.
+  # (백업 안 하면 재설치마다 새 노드로 등록되어 IP 가 표류함 — headscale 은 set-ip 가 없고 IP 를 단조 할당)
+  (mkS3BackupPair {
+    name = "tailscale";
+    mainUnit = "tailscaled.service";
+    stateDir = "/var/lib/tailscale";
+    sentinel = "/var/lib/tailscale/tailscaled.state";
+    s3key = "tailscale/tailscale-backup.tar.gz";
+    extractFlags = "-xzp --numeric-owner"; # root 소유 보존
+    user = null; # root
+    backupBuild = ''
+      tar -czpf "$tmp/backup.tar.gz" --numeric-owner -C /var/lib/tailscale .
+    '';
+  })
 ]
