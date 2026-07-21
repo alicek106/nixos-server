@@ -29,8 +29,8 @@ diskutil eject /dev/diskN
    ```
 3. agenix의 수신자를 새 host의 ssh public key로 rekey
    ```bash
-   # (server) git config가 ssh로 강제되므로 git config를 강제로 비운다. 이후에는 git 접근이 가능한 키를 적절히 서버로 옮겨서 사용하자.
-   GIT_CONFIG_GLOBAL=/dev/null git clone https://github.com/alicek106/nixos-server.git /home/alicek106/nixos-server
+   # (server) SSH 키는 ssh -A로 포워딩
+   git clone https://github.com/alicek106/nixos-server.git /home/alicek106/nixos-server
    sudo cat /etc/ssh/ssh_host_ed25519_key.pub
 
    # (mac) 자동 생성된 값을 맥북으로 가져와서 secrets.nix의 수신자로 변경한다.
