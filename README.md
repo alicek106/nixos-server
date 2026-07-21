@@ -42,12 +42,7 @@ diskutil eject /dev/diskN
    cd /home/alicek106/nixos-server && git pull
    sudo nixos-rebuild switch --flake .#nixos-alicek106
    ```
-4. 상태 데이터는 rebuild 후 S3에서 자동 복원된다.
-   - gitea repo, aliced 노트, headscale 원장이 각 서비스 기동 전에 복원된다.
-   - `tailscaled.state`(노드 정체성)도 복원된다. 덕분에 서버가 **같은 tailnet 노드로 자동 재접속**해 같은 IP를 유지한다.
-     (이 백업이 없으면 재설치마다 새 노드로 등록되어 IP가 바뀐다. headscale은 `set-ip`가 없어 옛 IP를 되찾기 어렵다.)
-5. TLS 인증서(Let's Encrypt)는 첫 부팅 후 acme 타이머(daily)가 알아서 발급한다.
-   - 임시(self-signed) 인증서만 떠서 기다리기 싫으면, 아래로 즉시 발급을 트리거한다.
+4. LE 인증서를 강제로 발급한다.
    ```bash
    sudo systemctl start acme-order-renew-headscale.alicek106.com.service
    ```
