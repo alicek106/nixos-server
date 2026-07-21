@@ -2,7 +2,7 @@
 {
   options.homelab.tailnetIP = lib.mkOption {
     type = lib.types.str;
-    default = "100.64.0.2";
+    default = "100.64.0.4";
     description = "fixed IP of this nisos server";
   };
 
