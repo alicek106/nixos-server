@@ -29,14 +29,14 @@ diskutil eject /dev/diskN
    ```
 3. agenix의 수신자를 새 host의 ssh public key로 rekey
    ```bash
-   # (server) 
-   git clone https://github.com/alicek106/nixos-server.git /home/alicek106/nixos-server
+   # (server) git config가 ssh로 강제되므로 git config를 강제로 비운다. 이후에는 git 접근이 가능한 키를 적절히 서버로 옮겨서 사용하자.
+   GIT_CONFIG_GLOBAL=/dev/null git clone https://github.com/alicek106/nixos-server.git /home/alicek106/nixos-server
    sudo cat /etc/ssh/ssh_host_ed25519_key.pub
 
    # (mac) 자동 생성된 값을 맥북으로 가져와서 secrets.nix의 수신자로 변경한다.
    cd nixos/secrets # 하고 나서 secrets.nix에서 server의 pub 키로 변경한다.
    agenix -r -i ~/.ssh/<nixos-server key> # 혹은 ragenix를 사용한다.
-   git commit -am "rekey secrets to new host key" && git push origin master
+   git commit -am "rekey secrets to new host key" && git push origin main
 
    # (server)
    cd /home/alicek106/nixos-server && git pull
@@ -48,10 +48,3 @@ diskutil eject /dev/diskN
 ## 수동 설정이 필요한 항목
 
 - claude code login
-- 수동으로 headscale node를 추가할 때:
-  ```bash
-  # user는 최초 nixos 설정할 때 해놨으므로 생성은 안해도 됨. 기록용으로만 남겨두었다. 
-  sudo headscale users create alicek106
-  sudo headscale preauthkeys create --user 1 --reusable --expiration 24h
-  tailscale up --login-server https://headscale.alicek106.com --authkey <preauth key>
-  ```
