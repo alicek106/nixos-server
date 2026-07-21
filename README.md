@@ -34,8 +34,8 @@ diskutil eject /dev/diskN
    sudo cat /etc/ssh/ssh_host_ed25519_key.pub
 
    # (mac) 자동 생성된 값을 맥북으로 가져와서 secrets.nix의 수신자로 변경한다.
-   cd nixos/secrets
-   agenix -r -i ~/.ssh/<nixos-server key>
+   cd nixos/secrets # 하고 나서 secrets.nix에서 server의 pub 키로 변경한다.
+   agenix -r -i ~/.ssh/<nixos-server key> # 혹은 ragenix를 사용한다.
    git commit -am "rekey secrets to new host key" && git push origin master
 
    # (server)
