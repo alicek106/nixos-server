@@ -18,6 +18,8 @@ sudo dd if=result/iso/*.iso of=/dev/rdiskN bs=4m status=progress
 diskutil eject /dev/diskN
 ```
 
+참고: USB 부팅은 root로 접속해야 함
+
 ## 서버 재설치
 
 1. `git clone https://github.com/alicek106/nixos-server.git /tmp/nixos-server && cd /tmp/nixos-server`
@@ -26,6 +28,7 @@ diskutil eject /dev/diskN
    sudo nix --experimental-features "nix-command flakes" run .#disko -- \
      --mode disko ./nixos/disk-config.nix
    sudo nixos-install --flake .#nixos-alicek106
+   # 이후 USB 빼고 재부팅
    ```
 3. agenix의 수신자를 새 host의 ssh public key로 rekey
    ```bash
@@ -42,6 +45,7 @@ diskutil eject /dev/diskN
    cd /home/alicek106/nixos-server && git pull
    sudo nixos-rebuild switch --flake .#nixos-alicek106
    ```
+
 4. LE 인증서를 강제로 발급한다.
    ```bash
    sudo systemctl start acme-order-renew-headscale.alicek106.com.service
